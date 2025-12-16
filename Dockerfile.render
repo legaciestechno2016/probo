@@ -1,3 +1,27 @@
+# Build stage for Frontend
+FROM node:22-alpine AS frontend-builder
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY apps/console/package*.json ./apps/console/
+COPY apps/trust/package*.json ./apps/trust/
+COPY packages/ ./packages/
+
+# Install dependencies
+RUN npm ci
+
+# Copy frontend source
+COPY apps/console ./apps/console
+COPY apps/trust ./apps/trust
+COPY tsconfig*.json ./
+
+# Build frontend packages
+RUN npm --workspace @probo/emails run build
+RUN npm --workspace @probo/console run build
+RUN npm --workspace @probo/trust run build
+
 # Build stage for Go backend
 FROM golang:1.24-alpine AS builder
 
@@ -15,6 +39,11 @@ RUN go mod download
 
 # Copy source code
 COPY . .
+
+# Copy built frontend from frontend-builder
+COPY --from=frontend-builder /app/packages/emails/dist ./packages/emails/dist
+COPY --from=frontend-builder /app/apps/console/dist ./apps/console/dist
+COPY --from=frontend-builder /app/apps/trust/dist ./apps/trust/dist
 
 # Initialize submodules
 RUN git submodule update --init --recursive 2>/dev/null || true
