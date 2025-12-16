@@ -59,7 +59,7 @@ LABEL org.opencontainers.image.source="https://github.com/legaciestechno2016/pro
 RUN useradd -m probo && \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y ca-certificates && \
+    apt-get install -y ca-certificates gettext-base && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
@@ -80,4 +80,5 @@ USER probo
 ENV PORT=10000
 EXPOSE 10000
 
-CMD ["/usr/local/bin/probod", "-cfg-file", "/app/cfg/prod.yaml"]
+# Use envsubst to replace environment variables in config, then start the app
+CMD sh -c 'envsubst < /app/cfg/prod.yaml > /tmp/prod.yaml && /usr/local/bin/probod -cfg-file /tmp/prod.yaml'
