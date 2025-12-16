@@ -1,0 +1,77 @@
+unit:
+  metrics:
+    addr: "0.0.0.0:8081"
+  tracing:
+    addr: ""
+    max-batch-size: 512
+    batch-timeout: 5
+    export-timeout: 30
+    max-queue-size: 2048
+
+probod:
+  base-url: "${PROBOD_BASE_URL}"
+  encryption-key: "${PROBOD_ENCRYPTION_KEY}"
+  chrome-dp-addr: ""
+
+  trust-center:
+    http-addr: ":8085"
+    https-addr: ":8443"
+
+  api:
+    addr: "0.0.0.0:${PORT}"
+    cors:
+      allowed-origins: ["${PROBOD_BASE_URL}"]
+    extra-header-fields: {}
+
+  pg:
+    addr: "${PROBOD_PG_HOST}:${PROBOD_PG_PORT}"
+    username: "${PROBOD_PG_USERNAME}"
+    password: "${PROBOD_PG_PASSWORD}"
+    database: "${PROBOD_PG_DATABASE}"
+    pool-size: 20
+
+  auth:
+    disable-signup: false
+    invitation-confirmation-token-validity: 3600
+    cookie:
+      name: "SSID"
+      domain: "${PROBOD_COOKIE_DOMAIN}"
+      secret: "${PROBOD_COOKIE_SECRET}"
+      duration: 24
+      secure: true
+    password:
+      pepper: "${PROBOD_PASSWORD_PEPPER}"
+      iterations: 1000000
+
+  trust-auth:
+    cookie-name: "TCT"
+    cookie-domain: "${PROBOD_COOKIE_DOMAIN}"
+    cookie-duration: 24
+    token-duration: 720
+    report-url-duration: 15
+    token-secret: "${PROBOD_TRUST_TOKEN_SECRET}"
+    scope: "trust_center_readonly"
+    token-type: "trust_center_access"
+
+  aws:
+    region: "${AWS_REGION}"
+    bucket: "${AWS_S3_BUCKET}"
+    access-key-id: "${AWS_ACCESS_KEY_ID}"
+    secret-access-key: "${AWS_SECRET_ACCESS_KEY}"
+    endpoint: "${AWS_S3_ENDPOINT}"
+
+  notifications:
+    mailer:
+      sender-name: "Probo"
+      sender-email: "${PROBOD_MAILER_EMAIL}"
+      smtp:
+        addr: "${PROBOD_SMTP_ADDR}"
+        username: "${PROBOD_SMTP_USERNAME}"
+        password: "${PROBOD_SMTP_PASSWORD}"
+        tls-required: true
+      mailer-interval: 60
+
+  openai:
+    api-key: "${OPENAI_API_KEY}"
+    temperature: 0.1
+    model-name: "gpt-4o"

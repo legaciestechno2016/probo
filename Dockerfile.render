@@ -1,0 +1,51 @@
+# Build stage for Go backend
+FROM golang:1.23-alpine AS builder
+
+WORKDIR /app
+
+# Install git for submodules
+RUN apk add --no-cache git
+
+# Copy go mod files
+COPY go.mod go.sum ./
+RUN go mod download
+
+# Copy source code
+COPY . .
+
+# Initialize submodules
+RUN git submodule update --init --recursive 2>/dev/null || true
+
+# Build the binary
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-X 'main.version=0.108.0' -X 'main.env=prod'" -o probod cmd/probod/main.go
+
+# Production stage
+FROM ubuntu:24.04
+
+LABEL org.opencontainers.image.source="https://github.com/legaciestechno2016/probo"
+
+RUN useradd -m probo && \
+    apt-get update && \
+    apt-get upgrade -y && \
+    apt-get install -y ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy binary from builder
+COPY --from=builder /app/probod /usr/local/bin/probod
+
+# Copy config files
+COPY cfg /app/cfg
+
+RUN chmod +x /usr/local/bin/probod && \
+    mkdir -p /etc/probod && \
+    chown -R probo:probo /app /etc/probod
+
+USER probo
+
+# Render uses PORT env variable
+ENV PORT=10000
+EXPOSE 10000
+
+CMD ["/usr/local/bin/probod", "-cfg-file", "/app/cfg/prod.yaml"]

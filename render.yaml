@@ -1,0 +1,48 @@
+databases:
+  - name: probo-db
+    databaseName: probod
+    user: probod
+    plan: free
+
+services:
+  - type: web
+    name: probo-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile.render
+    plan: free
+    healthCheckPath: /api/console/v1
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: PROBOD_BASE_URL
+        sync: false
+      - key: PROBOD_ENCRYPTION_KEY
+        generateValue: true
+      - key: PROBOD_PG_HOST
+        fromDatabase:
+          name: probo-db
+          property: host
+      - key: PROBOD_PG_PORT
+        fromDatabase:
+          name: probo-db
+          property: port
+      - key: PROBOD_PG_USERNAME
+        fromDatabase:
+          name: probo-db
+          property: user
+      - key: PROBOD_PG_PASSWORD
+        fromDatabase:
+          name: probo-db
+          property: password
+      - key: PROBOD_PG_DATABASE
+        fromDatabase:
+          name: probo-db
+          property: database
+      - key: PROBOD_COOKIE_DOMAIN
+        sync: false
+      - key: PROBOD_COOKIE_SECRET
+        generateValue: true
+      - key: PROBOD_PASSWORD_PEPPER
+        generateValue: true
+      - key: PROBOD_TRUST_TOKEN_SECRET
+        generateValue: true
